@@ -1,0 +1,79 @@
+% Actividad previa
+
+A = 1;
+fc = 1000;
+ts = 1/100000;
+%t = 0:ts:1;
+t = 0:ts:0.005; %valor para los graficos
+
+
+seno = A*sin(2*pi*fc*t);
+
+fs = 8000;
+d = 0.5;
+
+cuadrada = floor(square(2*pi*fs*t, 100*d)+1)/2;
+transicion = [0, diff(cuadrada)] == 1;
+
+natural = seno .* cuadrada;
+instantanea = seno .* transicion;
+
+% grafico de las 3 señales en una misma figura
+%figure;
+%plot(t, seno, 'b', 'LineWidth', 3, 'DisplayName', 'Senoidal'); hold on;
+%plot(t, natural, 'r', 'LineWidth', 2, 'DisplayName', 'Natural'); 
+%plot(t, instantanea, 'g', 'LineWidth', 1.5, 'DisplayName', 'Instantánea');
+%xlabel('Tiempo (s)');
+%ylabel('Amplitud');
+%title('Señales: Senoidal, Natural e Instantánea');
+%legend;
+%grid on;
+
+% Actividad 1
+
+Fseno = fft(seno);
+Fnatural = fft(natural);
+Finstantanea = fft(instantanea);
+
+% grafico de las 3 FFT en una misma figura
+%figure;
+%plot(t, Fseno, 'b', 'LineWidth', 3, 'DisplayName', 'FSenoidal'); hold on;
+%plot(t, Fnatural, 'r', 'LineWidth', 2, 'DisplayName', 'FNatural'); 
+%plot(t, Finstantanea, 'g', 'LineWidth', 1.5, 'DisplayName', 'FInstantánea');
+%xlabel('Frecuencia (hz)');
+%ylabel('Magnitud');
+%title('FFT: Senoidal, Natural e Instantánea');
+%legend;
+%grid on;
+
+% Actividad 2
+
+N = 8;
+niveles = 2^N;
+
+normalizacion = (instantanea - min(instantanea)) / (max(instantanea) - min(instantanea));
+indices = round(normalizacion * (niveles - 1));
+pcm = indices / (niveles - 1);
+pcm = pcm * (max(instantanea) - min(instantanea)) + min(instantanea);
+
+% grafica 3 metodos
+%figure;
+%plot(t, seno, 'r', 'LineWidth', 3, 'DisplayName', 'Original'); hold on;
+%plot(t, instantanea, 'b', 'LineWidth', 2, 'DisplayName', 'Instantánea', 'Marker','none');
+%stairs(t, pcm, 'g', 'LineWidth', 1.5, 'DisplayName', 'PCM cuantificada');
+%xlabel('Tiempo (s)');
+%ylabel('Amplitud');
+%title(['Señal Original, Instantánea y PCM (8 bits)']);
+%legend;
+%grid on;
+
+error = instantanea - pcm;
+error = max(error, 0);
+
+% grafica error
+figure;
+stem(t, error, 'k', 'LineWidth', 1.2, 'Marker', 'none');
+xlabel('Tiempo (s)');
+ylabel('Error de cuantización');
+title('Error de cuantización');
+grid on;
