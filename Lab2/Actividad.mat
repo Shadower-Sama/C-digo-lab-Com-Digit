@@ -1,0 +1,24 @@
+N = 1e4;
+Rb = 1e3;
+Fs = 16e3;
+Ts = 1/Fs;
+Ns = Fs/Rb;
+alpha = 1;
+
+bits = randi([0 1], 1, N);
+symbols = 2*bits - 1;
+
+upsampled = upsample(symbols, Ns);
+
+% filtro coseno alzado
+span = 6;
+rrcFilter = rcosdesign(alpha, span, Ns, 'normal');
+tx_signal = conv(upsampled, rrcFilter, 'same');
+
+% ruido
+SNR_dB = 20; % Relación señal a ruido en dB
+rx_signal = awgn(tx_signal, SNR_dB, 'measured');
+
+eyediagram(rx_signal, 2*Ns); % 2 bits por "ojo"
+
+title(['Diagrama de ojo (α = ' num2str(alpha) ', SNR = ' num2str(SNR_dB) ' dB)']);

@@ -1,0 +1,65 @@
+B = 1;
+alpha = 1;
+t = linspace(0, 10/B, 1000);
+f = linspace(-2*B, 2*B, 1000);
+
+
+f1 = (1 - alpha) * B;
+fDelta = B - f1;
+
+% Calcular H en cada tiempo, usando la formula 10
+Hf = zeros(size(f));
+for k = 1:length(f)
+    fk = abs(f(k));
+    if fk < f1
+        Hf(k) = 1;
+    elseif fk <= B
+        Hf(k) = 0.5 * (1 + cos(pi * (fk - f1) / (2*fDelta)));
+    else
+        Hf(k) = 0;
+    end
+end
+
+Nfft = 4096;
+f_dense = linspace(-2*B, 2*B, Nfft);
+Hf_dense = zeros(size(f_dense));
+for k = 1:length(f_dense)
+    fk = abs(f_dense(k));
+    if fk < f1
+        Hf_dense(k) = 1;
+    elseif fk <= B
+        Hf_dense(k) = 0.5 * (1 + cos(pi * (fk - f1) / (2*fDelta)));
+    else
+        Hf_dense(k) = 0;
+    end
+end
+
+Hf_shifted = ifftshift(Hf_dense); 
+ht = ifft(Hf_shifted, 'symmetric'); 
+ht = fftshift(ht); 
+dt = 1/(max(f_dense)-min(f_dense));
+t_dense = (-Nfft/2:Nfft/2-1)*dt; 
+
+% Solo t >= 0
+idx_pos = t_dense >= 0;
+t_pos = t_dense(idx_pos);
+ht_pos = ht(idx_pos);
+
+figure;
+
+subplot(2,1,1)
+plot(t_pos, ht_pos, 'LineWidth', 1.5);
+title(['Respuesta al impulso, \alpha = ', num2str(alpha)]);
+xlabel('Tiempo (s)');
+ylabel('h(t)');
+grid on;
+
+subplot(2,1,2)
+plot(f, Hf, 'LineWidth', 1.5);
+title(['Respuesta en frecuencia, \alpha = ', num2str(alpha)]);
+xlabel('Frecuencia (Hz)');
+ylabel('H(f)');
+xlim([-2*B 2*B]);
+ylim([0 1.2]);
+grid on;
+
